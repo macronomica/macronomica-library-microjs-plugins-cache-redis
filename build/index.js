@@ -79,9 +79,15 @@ exports.default = function () {
         return _client;
       },
 
-      get: _getKey2.default,
-      del: _delKey2.default,
-      set: _setKey2.default
+      get: function get() {
+        return (0, _getKey2.default)(micro, _client).apply(undefined, arguments);
+      },
+      del: function del() {
+        return (0, _delKey2.default)(micro, _client).apply(undefined, arguments);
+      },
+      set: function set() {
+        return (0, _setKey2.default)(micro, _client).apply(undefined, arguments);
+      }
     };
   };
 };

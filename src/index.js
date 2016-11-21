@@ -47,9 +47,9 @@ export default ({ driver:DRIVER, ...connection } = {}) => (micro, name, pluginId
   return {
     middleware,
     client() { return client },
-    get,
-    del,
-    set,
+    get: (...rest) => get(micro, client)(...rest),
+    del: (...rest) => del(micro, client)(...rest),
+    set: (...rest) => set(micro, client)(...rest)
   }
 }
 
