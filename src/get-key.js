@@ -15,9 +15,15 @@ export default (micro, client) => (key, callback, options = {}) => new Promise((
     if (result === null) {
       
       if (isFunction(callback)) {
-        return set(micro, client)(key, callback(key))
-          .then(resolve)
-          .catch(reject);
+        let promise = callback(key);
+        
+        if (!promise || !('then' in promise && isFunction(promise.then))) {
+          promise = Promise.resolve(promise);
+        }
+        
+        return promise
+          .then(result => set(micro, client)(key, result))
+          .then(resolve, reject);
       }
     }
     

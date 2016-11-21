@@ -34,7 +34,15 @@ exports.default = function (micro, client) {
         if (result === null) {
 
           if ((0, _lodash2.default)(callback)) {
-            return (0, _setKey2.default)(micro, client)(key, callback(key)).then(resolve).catch(reject);
+            var promise = callback(key);
+
+            if (!promise || !('then' in promise && (0, _lodash2.default)(promise.then))) {
+              promise = Promise.resolve(promise);
+            }
+
+            return promise.then(function (result) {
+              return (0, _setKey2.default)(micro, client)(key, result);
+            }).then(resolve, reject);
           }
         }
 

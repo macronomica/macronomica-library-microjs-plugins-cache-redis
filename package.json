@@ -11,7 +11,7 @@
     "deploy": "npm run version:patch && git push --tags origin HEAD:master",
     "compile": "npm run clean && npm run compile:babel && npm run compile:other && git add -A build",
     "clean": "rimraf build/*",
-    "test": "mocha -R spec --timeout 5000 test/index.js test/**/*.spec.js",
+    "test": "mocha -R spec --timeout 5000 build/test/**/*.spec.js",
     "watch:babel": "babel -w ./src/ -d build/ --source-maps",
     "watch:other": "cpx \"src/**/*.json\" build -w -v",
     "compile:babel": "babel ./src/ -d build/ --source-maps",
