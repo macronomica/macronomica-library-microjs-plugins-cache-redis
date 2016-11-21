@@ -1,13 +1,12 @@
-import isPlainObject from 'lodash.isplainobject';
+import upcast from './utils/upcast';
 
 export default (micro, client) => (key, value) => new Promise((resolve, reject) => {
-  let v = value;
+  let v = {
+    type: upcast.type(value),
+    value
+  };
   
-  if (isPlainObject(v)) {
-    v = JSON.stringify(value);
-  }
-  
-  client.set(key, v, function (err, result) {
+  client.set(key, JSON.stringify(v), function (err, result) {
     if (err) {
       micro.logger.error(err);
       return reject({

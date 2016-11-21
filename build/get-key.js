@@ -4,6 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _upcast = require('./utils/upcast');
+
+var _upcast2 = _interopRequireDefault(_upcast);
+
 var _lodash = require('lodash.isfunction');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -44,9 +48,15 @@ exports.default = function (micro, client) {
               return (0, _setKey2.default)(micro, client)(key, result);
             }).then(resolve, reject);
           }
+
+          return resolve(result);
         }
 
-        resolve(result);
+        var _JSON$parse = JSON.parse(result),
+            type = _JSON$parse.type,
+            value = _JSON$parse.value;
+
+        resolve(_upcast2.default.to(value, type));
       });
     });
   };

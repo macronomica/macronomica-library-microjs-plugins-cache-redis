@@ -1,3 +1,4 @@
+import upcast from './utils/upcast';
 import isFunction from 'lodash.isfunction';
 import isPlainObject from 'lodash.isplainobject';
 import set from './set-key';
@@ -25,8 +26,12 @@ export default (micro, client) => (key, callback, options = {}) => new Promise((
           .then(result => set(micro, client)(key, result))
           .then(resolve, reject);
       }
+      
+      return resolve(result);
     }
     
-    resolve(result);
+    let { type, value } = JSON.parse(result);
+    
+    resolve(upcast.to(value, type));
   });
 });

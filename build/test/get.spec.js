@@ -58,6 +58,20 @@ describe('api', function () {
       }, done);
     });
 
+    it('должен вернуть объект', function (done) {
+
+      setWrapper('test-get', { id: 1 }).then(function () {
+        return getWrapper('test-get');
+      }).then(function (result) {
+        result.should.be.a('object');
+        should.equal(1, result.id);
+
+        delWrapper('test-get').then(function () {
+          return done();
+        }, done);
+      }, done);
+    });
+
     it('должен вернуть объект переданный из callback():Promise', function (done) {
       var data = { id: 1 };
 

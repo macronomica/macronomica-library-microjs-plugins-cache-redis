@@ -4,22 +4,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _lodash = require('lodash.isplainobject');
+var _upcast = require('./utils/upcast');
 
-var _lodash2 = _interopRequireDefault(_lodash);
+var _upcast2 = _interopRequireDefault(_upcast);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function (micro, client) {
   return function (key, value) {
     return new Promise(function (resolve, reject) {
-      var v = value;
+      var v = {
+        type: _upcast2.default.type(value),
+        value: value
+      };
 
-      if ((0, _lodash2.default)(v)) {
-        v = JSON.stringify(value);
-      }
-
-      client.set(key, v, function (err, result) {
+      client.set(key, JSON.stringify(v), function (err, result) {
         if (err) {
           micro.logger.error(err);
           return reject({

@@ -35,7 +35,20 @@ describe('api', function() {
           delWrapper('test-run-cb').then(() => done(), done);
         }, done);
     });
+  
+    it('должен вернуть объект', done => {
     
+      setWrapper('test-get', { id: 1 })
+        .then(() => getWrapper('test-get'))
+        .then(result => {
+          result.should.be.a('object');
+          should.equal(1, result.id);
+          
+          delWrapper('test-get').then(() => done(), done);
+        }, done);
+    });
+  
+  
     it('должен вернуть объект переданный из callback():Promise', done => {
       const data = { id: 1 };
       
