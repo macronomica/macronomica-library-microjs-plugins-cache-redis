@@ -4,106 +4,92 @@ var _chai = require('chai');
 
 var _chai2 = _interopRequireDefault(_chai);
 
-var _redis = require('redis');
+var _index = require('../index');
 
-var _redis2 = _interopRequireDefault(_redis);
-
-var _getKey = require('./../get-key');
-
-var _getKey2 = _interopRequireDefault(_getKey);
-
-var _delKey = require('./../del-key');
-
-var _delKey2 = _interopRequireDefault(_delKey);
-
-var _setKey = require('./../set-key');
-
-var _setKey2 = _interopRequireDefault(_setKey);
+var _index2 = _interopRequireDefault(_index);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var should = _chai2.default.should();
 var micro = {
-  logger: { error: function error(err) {
+  before: { done: function done() {}, args: [] },
+  after: { done: function done() {}, args: [] },
+  queue: function queue(raw) {
+
+    switch (raw.case) {
+      case 'wait':
+        micro.before = raw;break;
+      case 'close':
+        micro.after = raw;break;
+    }
+
+    return micro;
+  },
+  logger: {
+    error: function error(err) {
       return console.error(err);
-    } }
+    }
+  }
 };
-var client = _redis2.default.createClient();
 
-var delWrapper = (0, _delKey2.default)(micro, client);
-var getWrapper = (0, _getKey2.default)(micro, client);
-var setWrapper = (0, _setKey2.default)(micro, client);
+var plugin = (0, _index2.default)({})(micro, 'test', Date.now());
+var KEY = 'test-key';
 
-describe('api', function () {
+before(function () {
+  var _micro$before;
 
-  describe('#get', function () {
-    it('должен вернуть null', function (done) {
-
-      getWrapper('test-get').then(function (result) {
-        should.equal(null, result);
-        done();
-      }, done);
-    });
-
-    it('должен вернуть объект переданный из callback', function (done) {
-      var data = { id: 1 };
-
-      getWrapper('test-run-cb', function (key) {
-        return data;
-      }).then(function (result) {
-        should.equal(data, result);
-        delWrapper('test-run-cb').then(function () {
-          return done();
-        }, done);
-      }, done);
-    });
-
-    it('должен вернуть объект', function (done) {
-
-      setWrapper('test-get', { id: 1 }).then(function () {
-        return getWrapper('test-get');
-      }).then(function (result) {
-        result.should.be.a('object');
-        should.equal(1, result.id);
-
-        delWrapper('test-get').then(function () {
-          return done();
-        }, done);
-      }, done);
-    });
-
-    it('должен вернуть объект переданный из callback():Promise', function (done) {
-      var data = { id: 1 };
-
-      getWrapper('test-run-cb', function (key) {
-        return Promise.resolve(data);
-      }).then(function (result) {
-        should.equal(data, result);
-        delWrapper('test-run-cb').then(function () {
-          return done();
-        }, done);
-      }, done);
-    });
-  });
-
-  after(function () {
-    return client.quit();
-  });
+  return (_micro$before = micro.before).done.apply(_micro$before, _toConsumableArray(micro.before.args));
 });
 
-function getValue() {
-  return getWrapper('test-run-cb').then(success, error);
-}
+after(function () {
+  var _micro$after;
 
-function setValue() {
-  return setWrapper('test-set-object', { id: 2 }).then(success, error);
-}
+  return (_micro$after = micro.after).done.apply(_micro$after, _toConsumableArray(micro.after.args));
+});
 
-function success(result) {
-  console.log(result);
-}
+describe('read / write', function () {
 
-function error(error) {
-  console.error(error);
-}
+  it('#plugin.read -> должен вернуть null', function () {
+    return plugin.read(KEY).then(function (result) {
+      return should.equal(null, result);
+    });
+  });
+
+  it('#plugin.write + plugin.read -> должен вернуть объект', function () {
+    return plugin.write(KEY, { id: 1 }).then(function () {
+      return plugin.read(KEY);
+    }).then(function (result) {
+      result.should.be.a('object');
+      should.equal(1, result.id);
+    }).then(function () {
+      return plugin.del(KEY);
+    });
+  });
+
+  it('#plugin.read + callback -> должен вернуть объект', function () {
+    var data = { id: 1 };
+
+    return plugin.read(KEY, function (key) {
+      return data;
+    }).then(function (result) {
+      return should.equal(data, result);
+    }).then(function () {
+      return plugin.del(KEY);
+    });
+  });
+
+  it('#plugin.read + callback():Promise -> должен вернуть объект', function () {
+    var data = { id: 1 };
+
+    return plugin.read(KEY, function (key) {
+      return Promise.resolve(data);
+    }).then(function (result) {
+      return should.equal(data, result);
+    }).then(function () {
+      return plugin.del(KEY);
+    });
+  });
+});
 //# sourceMappingURL=get.spec.js.map

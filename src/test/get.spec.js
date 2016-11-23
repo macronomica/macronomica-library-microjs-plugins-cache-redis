@@ -1,80 +1,66 @@
 import chai from 'chai';
-import middleware from 'redis';
-import get from './../get-key';
-import del from './../del-key';
-import set from './../set-key';
+import Plugin from '../index';
 
 const should = chai.should();
 const micro = {
-  logger: { error: err => console.error(err) }
+  before: { done: () => {}, args: [] },
+  after : { done: () => {}, args: [] },
+  queue : (raw) => {
+    
+    switch (raw.case) {
+      case 'wait' : micro.before = raw; break;
+      case 'close': micro.after = raw; break;
+    }
+    
+    return micro;
+  },
+  logger: {
+    error: err => console.error(err)
+  }
 };
-const client = middleware.createClient();
 
-const delWrapper = del(micro, client);
-const getWrapper = get(micro, client);
-const setWrapper = set(micro, client);
+const plugin = Plugin({})(micro, 'test', Date.now());
+const KEY = 'test-key';
 
-describe('api', function() {
+before(() => micro.before.done(...micro.before.args));
+
+after(() => micro.after.done(...micro.after.args));
+
+describe('read / write', function() {
   
-  describe('#get', function() {
-    it('должен вернуть null', done => {
-      
-      getWrapper('test-get')
-        .then(result => {
-          should.equal(null, result);
-          done();
-        }, done);
-    });
+  it('#plugin.read -> должен вернуть null', () =>
+    plugin
+      .read(KEY)
+      .then(result => should.equal(null, result))
+  );
+  
+  it('#plugin.write + plugin.read -> должен вернуть объект', () =>
+    plugin
+      .write(KEY, { id: 1 })
+      .then(() => plugin.read(KEY))
+      .then(result => {
+        result.should.be.a('object');
+        should.equal(1, result.id);
+      })
+      .then(() => plugin.del(KEY))
+  );
+  
+  
+  it('#plugin.read + callback -> должен вернуть объект', () => {
+    const data = { id: 1 };
     
-    it('должен вернуть объект переданный из callback', done => {
-      const data = { id: 1 };
-      
-      getWrapper('test-run-cb', key => data)
-        .then(result => {
-          should.equal(data, result);
-          delWrapper('test-run-cb').then(() => done(), done);
-        }, done);
-    });
-  
-    it('должен вернуть объект', done => {
-    
-      setWrapper('test-get', { id: 1 })
-        .then(() => getWrapper('test-get'))
-        .then(result => {
-          result.should.be.a('object');
-          should.equal(1, result.id);
-          
-          delWrapper('test-get').then(() => done(), done);
-        }, done);
-    });
-  
-  
-    it('должен вернуть объект переданный из callback():Promise', done => {
-      const data = { id: 1 };
-      
-      getWrapper('test-run-cb', key => Promise.resolve(data))
-        .then(result => {
-          should.equal(data, result);
-          delWrapper('test-run-cb').then(() => done(), done);
-        }, done);
-    });
+    return plugin
+      .read(KEY, key => data)
+      .then(result => should.equal(data, result))
+      .then(() => plugin.del(KEY));
   });
   
-  after(() => client.quit());
+  it('#plugin.read + callback():Promise -> должен вернуть объект', () => {
+    const data = { id: 1 };
+    
+    return plugin
+      .read(KEY, key => Promise.resolve(data))
+      .then(result => should.equal(data, result))
+      .then(() => plugin.del(KEY));
+  });
 });
-
-function getValue() {
-  return getWrapper('test-run-cb').then(success, error);
-}
-
-function setValue() {
-  return setWrapper('test-set-object', { id: 2 }).then(success, error);
-}
-
-function success(result) {
-  console.log(result);
-}
-
-function error(error) {
-  console.error(error);
-}

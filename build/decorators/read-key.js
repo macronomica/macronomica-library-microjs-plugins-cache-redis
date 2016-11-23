@@ -4,21 +4,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _upcast = require('./utils/upcast');
-
-var _upcast2 = _interopRequireDefault(_upcast);
-
 var _lodash = require('lodash.isfunction');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _lodash3 = require('lodash.isplainobject');
+var _upcast = require('../utils/upcast');
 
-var _lodash4 = _interopRequireDefault(_lodash3);
+var _upcast2 = _interopRequireDefault(_upcast);
 
-var _setKey = require('./set-key');
+var _writeKey = require('./write-key');
 
-var _setKey2 = _interopRequireDefault(_setKey);
+var _writeKey2 = _interopRequireDefault(_writeKey);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -45,7 +41,7 @@ exports.default = function (micro, client) {
             }
 
             return promise.then(function (result) {
-              return (0, _setKey2.default)(micro, client)(key, result);
+              return (0, _writeKey2.default)(micro, client)(key, result);
             }).then(resolve, reject);
           }
 
@@ -61,4 +57,4 @@ exports.default = function (micro, client) {
     });
   };
 };
-//# sourceMappingURL=get-key.js.map
+//# sourceMappingURL=read-key.js.map

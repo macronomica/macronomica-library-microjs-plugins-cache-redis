@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/decorators/index.js"],"names":["write","read"],"mappings":";;;;;;AAAA;;;;AACA;;;;;;kBAEe,EAAEA,yBAAF,EAASC,uBAAT,E","file":"index.js","sourcesContent":["import read from './read-key';\nimport write from './write-key';\n\nexport default { write, read }"]}

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _upcast = require('./utils/upcast');
+var _upcast = require('../utils/upcast');
 
 var _upcast2 = _interopRequireDefault(_upcast);
 
@@ -32,4 +32,4 @@ exports.default = function (micro, client) {
     });
   };
 };
-//# sourceMappingURL=set-key.js.map
+//# sourceMappingURL=write-key.js.map

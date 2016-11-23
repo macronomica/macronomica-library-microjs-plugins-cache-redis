@@ -1,4 +1,4 @@
-import upcast from './utils/upcast';
+import upcast from '../utils/upcast';
 
 export default (micro, client) => (key, value) => new Promise((resolve, reject) => {
   let v = {

@@ -1,8 +1,8 @@
 import chai from 'chai';
 import middleware from 'redis';
-import get from './../get-key';
-import del from './../del-key';
-import set from './../set-key';
+import get from '../decorators/get-key';
+import del from '../decorators/remove-key';
+import set from '../decorators/write-key';
 
 const should = chai.should();
 const micro = {

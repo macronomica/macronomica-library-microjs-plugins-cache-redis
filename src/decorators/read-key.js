@@ -1,7 +1,6 @@
-import upcast from './utils/upcast';
 import isFunction from 'lodash.isfunction';
-import isPlainObject from 'lodash.isplainobject';
-import set from './set-key';
+import upcast from '../utils/upcast';
+import write from './write-key';
 
 export default (micro, client) => (key, callback, options = {}) => new Promise((resolve, reject) => {
   client.get(key, function (err, result) {
@@ -23,7 +22,7 @@ export default (micro, client) => (key, callback, options = {}) => new Promise((
         }
         
         return promise
-          .then(result => set(micro, client)(key, result))
+          .then(result => write(micro, client)(key, result))
           .then(resolve, reject);
       }
       

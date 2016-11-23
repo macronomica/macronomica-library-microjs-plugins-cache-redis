@@ -8,17 +8,17 @@ var _redis = require('redis');
 
 var _redis2 = _interopRequireDefault(_redis);
 
-var _getKey = require('./../get-key');
+var _getKey = require('../decorators/get-key');
 
 var _getKey2 = _interopRequireDefault(_getKey);
 
-var _delKey = require('./../del-key');
+var _removeKey = require('../decorators/remove-key');
 
-var _delKey2 = _interopRequireDefault(_delKey);
+var _removeKey2 = _interopRequireDefault(_removeKey);
 
-var _setKey = require('./../set-key');
+var _writeKey = require('../decorators/write-key');
 
-var _setKey2 = _interopRequireDefault(_setKey);
+var _writeKey2 = _interopRequireDefault(_writeKey);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30,9 +30,9 @@ var micro = {
 };
 var client = _redis2.default.createClient();
 
-var delWrapper = (0, _delKey2.default)(micro, client);
+var delWrapper = (0, _removeKey2.default)(micro, client);
 var getWrapper = (0, _getKey2.default)(micro, client);
-var setWrapper = (0, _setKey2.default)(micro, client);
+var setWrapper = (0, _writeKey2.default)(micro, client);
 
 getNullValue().then(getValueAsCallback).then(function () {
   return delWrapper('test-run-cb');

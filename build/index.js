@@ -4,23 +4,25 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _redis = require('redis');
 
 var _redis2 = _interopRequireDefault(_redis);
 
-var _delKey = require('./del-key');
+var _lodash = require('lodash.isfunction');
 
-var _delKey2 = _interopRequireDefault(_delKey);
+var _lodash2 = _interopRequireDefault(_lodash);
 
-var _setKey = require('./set-key');
+var _connect = require('./connect');
 
-var _setKey2 = _interopRequireDefault(_setKey);
+var _connect2 = _interopRequireDefault(_connect);
 
-var _getKey = require('./get-key');
+var _disconnect = require('./disconnect');
 
-var _getKey2 = _interopRequireDefault(_getKey);
+var _disconnect2 = _interopRequireDefault(_disconnect);
+
+var _decorators = require('./decorators');
+
+var _decorators2 = _interopRequireDefault(_decorators);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30,93 +32,67 @@ var DRIVER = 'redis';
 
 exports.default = function () {
   var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-      DRIVER = _ref.driver,
-      connection = _objectWithoutProperties(_ref, ['driver']);
+      _ref$driver = _ref.driver,
+      driver = _ref$driver === undefined ? DRIVER : _ref$driver,
+      settings = _objectWithoutProperties(_ref, ['driver']);
 
   return function (micro, name, pluginId) {
-    var plugin = { name: name, id: pluginId };
-    var _client = void 0;
+    var plugin = { id: pluginId, name: name, middleware: _redis2.default, client: null };
+    var __decorators = {};
 
     micro.queue({
       case: 'wait',
       args: [],
       done: function done() {
-        return new Promise(function (resolve, reject) {
-          _client = _redis2.default.createClient(_extends({}, connection, {
-            retry_strategy: retryStrategy
-          }));
-
-          _client.on("error", errorCallback(micro)).on("ready", function (error) {
-            if (error) {
-              errorCallback(micro)(error);
-              return reject(error);
-            }
-
-            resolve();
-          });
-        });
+        return (0, _connect2.default)(micro, _redis2.default, settings).then(function (client) {
+          return plugin.client = client;
+        }).then(applyDecorators(micro, __decorators));
       }
     }).queue({
       case: 'close',
       args: [],
       done: function done() {
-        return new Promise(function (resolve, reject) {
-          if (!_client) {
-            return resolve();
-          }
-
-          _client.quit();
-          process.nextTick(function () {
-            return resolve();
-          });
-        });
+        return (0, _disconnect2.default)(plugin.client);
       }
     });
 
-    return {
-      middleware: _redis2.default,
-      client: function client() {
-        return _client;
-      },
+    return new Proxy(plugin, {
+      get: function get(target, property) {
+        if (property in target) {
+          return target[property];
+        }
 
-      get: function get() {
-        return (0, _getKey2.default)(micro, _client).apply(undefined, arguments);
-      },
-      del: function del() {
-        return (0, _delKey2.default)(micro, _client).apply(undefined, arguments);
-      },
-      set: function set() {
-        return (0, _setKey2.default)(micro, _client).apply(undefined, arguments);
+        if (property in __decorators) {
+          return __decorators[property];
+        }
+
+        if ((0, _lodash2.default)(plugin.client[property])) {
+          return function () {
+            for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
+              rest[_key] = arguments[_key];
+            }
+
+            return new Promise(function (resolve, reject) {
+              var _plugin$client;
+
+              return (_plugin$client = plugin.client)[property].apply(_plugin$client, rest.concat([function (err, result) {
+                return err ? reject(err) : resolve(result);
+              }]));
+            });
+          };
+        }
+
+        return plugin.client[property];
       }
-    };
+    });
   };
 };
 
-function retryStrategy(options) {
-  if (options.error.code === 'ECONNREFUSED') {
-    // End reconnecting on a specific error and flush all commands with a individual error
-    return new Error('The server refused the connection');
-  }
-  if (options.total_retry_time > 1000 * 60 * 60) {
-    // End reconnecting after a specific timeout and flush all commands with a individual error
-    return new Error('Retry time exhausted');
-  }
-  if (options.times_connected > 10) {
-    // End reconnecting with built in error
-    return undefined;
-  }
-  // reconnect after
-  return Math.max(options.attempt * 100, 3000);
-}
-
-function errorCallback(micro) {
-  return function (error) {
-    if (!!error) {
-      micro.logger.error('The server refused the connection', {
-        code: 'error.plugin-cache-redis/' + error.code,
-        message: error.message.toString()
-      });
-    }
+function applyDecorators(micro, __decorators) {
+  return function (client) {
+    return Object.keys(_decorators2.default).forEach(function (key) {
+      return __decorators[key] = _decorators2.default[key](micro, client);
+    });
   };
 }
 //# sourceMappingURL=index.js.map

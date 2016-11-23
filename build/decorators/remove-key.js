@@ -21,4 +21,4 @@ exports.default = function (micro, client) {
     });
   };
 };
-//# sourceMappingURL=del-key.js.map
+//# sourceMappingURL=remove-key.js.map
