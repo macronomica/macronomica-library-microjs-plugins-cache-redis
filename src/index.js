@@ -47,5 +47,11 @@ export default ({ driver = DRIVER, ...settings } = {}) => (micro, name, pluginId
 function applyDecorators(micro, __decorators) {
   return client => Object
     .keys(decorators)
-    .forEach(key => __decorators[ key ] = decorators[ key ](micro, client))
+    .forEach(key => {
+      if (isFunction(decorators[ key ])) {
+        __decorators[ key ] = decorators[ key ](micro, client)
+      } else {
+        __decorators[ key ] = decorators[ key ];
+      }
+    })
 }

@@ -8,32 +8,14 @@ var _index = require('../index');
 
 var _index2 = _interopRequireDefault(_index);
 
+var _data = require('./data');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var should = _chai2.default.should();
-var micro = {
-  before: { done: function done() {}, args: [] },
-  after: { done: function done() {}, args: [] },
-  queue: function queue(raw) {
-
-    switch (raw.case) {
-      case 'wait':
-        micro.before = raw;break;
-      case 'close':
-        micro.after = raw;break;
-    }
-
-    return micro;
-  },
-  logger: {
-    error: function error(err) {
-      return console.error(err);
-    }
-  }
-};
-
+var micro = (0, _data.MICRO)();
 var plugin = (0, _index2.default)({})(micro, 'test', Date.now());
 var KEY = 'test-key';
 
@@ -49,47 +31,42 @@ after(function () {
   return (_micro$after = micro.after).done.apply(_micro$after, _toConsumableArray(micro.after.args));
 });
 
-describe('read / write', function () {
+describe('save / load', function () {
 
-  it('#plugin.read -> должен вернуть null', function () {
+  it('#plugin.load -> должен вернуть null', function () {
     return plugin.read(KEY).then(function (result) {
       return should.equal(null, result);
     });
   });
 
-  it('#plugin.write + plugin.read -> должен вернуть объект', function () {
-    return plugin.write(KEY, { id: 1 }).then(function () {
+  it('#plugin.save + plugin.load -> должен вернуть объект', function () {
+    return plugin.write(KEY, _data.DATA).then(function () {
       return plugin.read(KEY);
     }).then(function (result) {
-      result.should.be.a('object');
-      should.equal(1, result.id);
+      return result.should.be.a('object');
     }).then(function () {
       return plugin.del(KEY);
     });
   });
 
   it('#plugin.read + callback -> должен вернуть объект', function () {
-    var data = { id: 1 };
-
     return plugin.read(KEY, function (key) {
-      return data;
+      return _data.DATA;
     }).then(function (result) {
-      return should.equal(data, result);
+      return should.equal(_data.DATA, result);
     }).then(function () {
       return plugin.del(KEY);
     });
   });
 
   it('#plugin.read + callback():Promise -> должен вернуть объект', function () {
-    var data = { id: 1 };
-
     return plugin.read(KEY, function (key) {
-      return Promise.resolve(data);
+      return Promise.resolve(_data.DATA);
     }).then(function (result) {
-      return should.equal(data, result);
+      return should.equal(_data.DATA, result);
     }).then(function () {
       return plugin.del(KEY);
     });
   });
 });
-//# sourceMappingURL=get.spec.js.map
+//# sourceMappingURL=save-load.spec.js.map
