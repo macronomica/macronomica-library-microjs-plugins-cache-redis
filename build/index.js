@@ -92,7 +92,7 @@ function applyDecorators(micro, __decorators) {
   return function (client) {
     return Object.keys(_decorators2.default).forEach(function (key) {
       if ((0, _lodash2.default)(_decorators2.default[key])) {
-        __decorators[key] = _decorators2.default[key](micro, client);
+        __decorators[key] = _decorators2.default[key](micro, client, __decorators);
       } else {
         __decorators[key] = _decorators2.default[key];
       }

@@ -20,14 +20,10 @@ _chai2.default.config.showDiff = true;
 var micro = (0, _data.MICRO)();
 var plugin = (0, _index2.default)({})(micro, 'test', Date.now());
 
-var result = void 0;
-
 before(function () {
   var _micro$before;
 
   return (_micro$before = micro.before).done.apply(_micro$before, _toConsumableArray(micro.before.args)).then(function () {
-    return console.log(plugin.TAGS_KEY);
-  }).then(function () {
     return plugin.del(plugin.TAGS_KEY);
   });
 });
@@ -40,12 +36,18 @@ after(function () {
   });
 });
 
-describe('tags', function () {
+describe('tags-set', function () {
 
-  describe('#tag new', function () {
-    it('should have property', function () {
-      return plugin.tagset('user-1', 'user-2').then(function (tags) {});
+  it('should set one tag', function () {
+    return plugin.tagset('user-1').then(function (tags) {
+      return tags.should.have.property('user-1');
+    });
+  });
+
+  it('should set many tags', function () {
+    return plugin.tagset('user-1', 'user-2', 'user-3', 'user-4').then(function (tags) {
+      return tags.should.be.a('object').have.all.keys('user-1', 'user-2', 'user-3', 'user-4');
     });
   });
 });
-//# sourceMappingURL=tags.spec.js.map
+//# sourceMappingURL=tags-set.spec.js.map

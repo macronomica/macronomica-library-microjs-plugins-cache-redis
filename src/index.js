@@ -49,7 +49,7 @@ function applyDecorators(micro, __decorators) {
     .keys(decorators)
     .forEach(key => {
       if (isFunction(decorators[ key ])) {
-        __decorators[ key ] = decorators[ key ](micro, client)
+        __decorators[ key ] = decorators[ key ](micro, client, __decorators)
       } else {
         __decorators[ key ] = decorators[ key ];
       }

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _constants = require('./constants');
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 exports.default = function (micro, client) {
   return function () {
@@ -15,7 +15,11 @@ exports.default = function (micro, client) {
     }
 
     return new Promise(function (resolve, reject) {
-      client.hmset.apply(client, [_constants.TAGS_KEY].concat(_toConsumableArray(result.keys), [function (err, result) {
+      var hasManyTags = tags.length;
+
+      hasManyTags ? client.hmget.apply(client, [_constants.TAGS_KEY].concat(tags, [callback])) : client.hgetall(_constants.TAGS_KEY, callback);
+
+      function callback(err, result) {
         if (err) {
           micro.logger.error(err);
           return reject({
@@ -24,9 +28,29 @@ exports.default = function (micro, client) {
           });
         }
 
-        resolve(result.tags);
-      }]));
+        if (result === null || !hasManyTags) {
+          return resolve(result);
+        }
+
+        resolve(reduced(tags, result));
+      }
     });
   };
 };
+
+function reduced(keys, values) {
+  return keys.length > values.length ? reduceKeys(keys, values) : reduceValues(keys, values);
+}
+
+function reduceKeys(keys, values) {
+  return keys.reduce(function (result, key, i) {
+    return Object.assign(result, _defineProperty({}, key, values[i]));
+  }, {});
+}
+
+function reduceValues(keys, values) {
+  return values.reduce(function (result, value, i) {
+    return Object.assign(result, _defineProperty({}, keys[i], value));
+  }, {});
+}
 //# sourceMappingURL=get.js.map

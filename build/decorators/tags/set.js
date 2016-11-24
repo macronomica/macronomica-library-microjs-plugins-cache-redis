@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.reduceTags = reduceTags;
 
 var _constants = require('./constants');
 
@@ -15,14 +16,9 @@ exports.default = function (micro, client) {
     }
 
     return new Promise(function (resolve, reject) {
-      var result = tags.reduce(function (result, tag) {
-        result.tags[tag] = Date.now();
-        result.keys.push(tag);
-        result.keys.push(result.tags[tag]);
-        return result;
-      }, { keys: [], tags: {} });
+      var result = reduceTags(tags);
 
-      client.hmset.apply(client, [_constants.TAGS_KEY].concat(_toConsumableArray(result.keys), [function (err, result) {
+      client.hmset.apply(client, [_constants.TAGS_KEY].concat(_toConsumableArray(result.keys), [function (err, res) {
         if (err) {
           micro.logger.error(err);
           return reject({
@@ -36,4 +32,13 @@ exports.default = function (micro, client) {
     });
   };
 };
+
+function reduceTags(tags) {
+  return tags.reduce(function (result, tag) {
+    result.tags[tag] = Date.now();
+    result.keys.push(tag);
+    result.keys.push(result.tags[tag]);
+    return result;
+  }, { keys: [], tags: {} });
+}
 //# sourceMappingURL=set.js.map

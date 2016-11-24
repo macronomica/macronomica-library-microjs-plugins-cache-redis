@@ -8,21 +8,19 @@ var _lodash = require('lodash.isfunction');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _upcast = require('../utils/upcast');
-
-var _upcast2 = _interopRequireDefault(_upcast);
-
-var _save = require('./save');
-
-var _save2 = _interopRequireDefault(_save);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = function (micro, client) {
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+exports.default = function (micro, client, _ref) {
+  var tagget = _ref.tagget,
+      save = _ref.save;
   return function (key, callback) {
-    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        tags = _ref2.tags;
+
     return new Promise(function (resolve, reject) {
-      client.hgetall(key, function (err, result) {
+      client.hgetall(key, function (err, res) {
         if (err) {
           micro.logger.error(err);
           return reject({
@@ -31,7 +29,7 @@ exports.default = function (micro, client) {
           });
         }
 
-        if (result === null) {
+        if (res === null) {
 
           if ((0, _lodash2.default)(callback)) {
             var promise = callback(key);
@@ -41,25 +39,39 @@ exports.default = function (micro, client) {
             }
 
             return promise.then(function (result) {
-              return (0, _save2.default)(micro, client)(key, result);
+              return save(key, result, { tags: tags });
             }).then(resolve, reject);
           }
 
-          return resolve(result);
+          return resolve(res);
         }
 
-        var type = result.type,
-            value = result.value;
+        if (!Array.isArray(tags)) {
+          return resolve(JSON.parse(res.value, parseReviver));
+        }
 
-
-        resolve(JSON.parse(value, function (key, value) {
-          if (!!value && !!value.search && !!~value.search(/^[0-9]{4}[-]{1}[0-9]{2}[-]{1}[0-9]{2}[A-Z]{1}[0-9]{2}[:]{1}[0-9]{2}[:]{1}[0-9]{2}[\.]{1}[0-9]{3}[A-Z]{1}$/)) {
-            return new Date(value);
+        tagget.apply(undefined, _toConsumableArray(tags)).then(function (originalTags) {
+          if (hasTagUpdated(tags, originalTags)) {
+            return resolve(null);
           }
-          return value;
-        }));
+
+          resolve(JSON.parse(res.value, parseReviver));
+        });
       });
     });
   };
 };
+
+function hasTagUpdated(tags, originalTags) {
+  return Object.keys(originalTags).some(function (key) {
+    return originalTags[key] === tags[key];
+  });
+}
+
+function parseReviver(key, value) {
+  if (!!value && !!value.search && !!~value.search(/^[0-9]{4}[-]{1}[0-9]{2}[-]{1}[0-9]{2}[A-Z]{1}[0-9]{2}[:]{1}[0-9]{2}[:]{1}[0-9]{2}[\.]{1}[0-9]{3}[A-Z]{1}$/)) {
+    return new Date(value);
+  }
+  return value;
+}
 //# sourceMappingURL=load.js.map
