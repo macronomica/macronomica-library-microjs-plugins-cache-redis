@@ -44,7 +44,7 @@ exports.default = function () {
       case: 'wait',
       args: [],
       done: function done() {
-        return (0, _connect2.default)(micro, _redis2.default, settings).then(function (client) {
+        return (0, _connect2.default)(micro, plugin, settings).then(function (client) {
           return plugin.client = client;
         }).then(applyDecorators(micro, __decorators));
       }
@@ -52,7 +52,7 @@ exports.default = function () {
       case: 'close',
       args: [],
       done: function done() {
-        return (0, _disconnect2.default)(plugin.client);
+        return (0, _disconnect2.default)(micro, plugin, plugin.client);
       }
     });
 

@@ -14,14 +14,14 @@ export default ({ driver = DRIVER, ...settings } = {}) => (micro, name, pluginId
     .queue({
       case: 'wait',
       args: [],
-      done: () => connect(micro, middleware, settings)
+      done: () => connect(micro, plugin, settings)
         .then(client => plugin.client = client)
         .then(applyDecorators(micro, __decorators))
     })
     .queue({
       case: 'close',
       args: [],
-      done: () => disconnect(plugin.client)
+      done: () => disconnect(micro, plugin, plugin.client)
     });
 
   return new Proxy(plugin, {
